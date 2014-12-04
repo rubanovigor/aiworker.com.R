@@ -1,3 +1,4 @@
+# -- loading data
 load("~/R/data/so_v2_2014.03.21.RData")
  
 library(cluster); library(ggplot2); library(gridExtra); library(scatterplot3d)
