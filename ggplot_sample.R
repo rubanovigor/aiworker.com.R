@@ -3,7 +3,7 @@ result.long = melt(df, id=c('Date'))
 
 my.colour = c("actual" = "grey60", "elman" = "orange")
 my.size = c("actual" = 2, "elman" = 1)
-
+ 
 p = list()
 
 p[[1]] = ggplot(data = result.long, aes(x=Date, y = OutputPar, group=type,colour=type)) +
