@@ -10,7 +10,7 @@ library(reshape2)
 # df_hist_att = hist(eegData$high_alpha, 
 #                    breaks = 70, 
 #                    col="blue", xlab="wave", ylab="count", main="Distribution of delta")
-
+ 
 
 df = eegData
 wave_name = colnames(df[,c(6:13)])
