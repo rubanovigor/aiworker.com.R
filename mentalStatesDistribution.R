@@ -1,4 +1,6 @@
-# -- prelimenary analyses of EEG (Neurosky) Att/Med at different mental states
+# EEG (Att/Med/S) distribution by activity and username
+#=============================================================================
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 rm(list=ls());
 # --===========================================================================
 library(cluster); library(ggplot2); library(gridExtra); library(scatterplot3d);
@@ -18,6 +20,17 @@ eegData = csvDataProcessing(csv_dir)
 
 # --
 df = eegData; 
+levels(df$CurrentActivity) <- c(levels(df$CurrentActivity), "football") 
+df$CurrentActivity[df$CurrentActivity=="basketball"] = "football";
+levels(df$username) <- c(levels(df$username), c("Gerson","Moritz")) 
+df$username[df$username=="AntonioManno"] = "Gerson";
+df$username[df$username=="SkinnerLayne"] = "Moritz";
+
+temp = df[1:50,]; temp[,] = NA
+temp$username= "EzequielDjeredjian"; temp$CurrentActivity = "football" 
+temp$att = 50; temp$med = 50;
+df = rbind(df, temp)
+remove(temp)
 # tt$CurrentActivity = 'notDSC' ;
 # tt2$CurrentActivity = 'tDSC' ;
 # df = rbind(tt,tt2); 
@@ -32,6 +45,7 @@ wave_name = colnames(df[,c(6:13)])
 #   df[ pat ,wave_name[j]] = NA
 # }  
 df$s = df$att-df$med
+# -- remove ZERO values
 df <- df[ which(df$med!=0 & df$att!=0), ]
 
 # -- remove unused Acticity, e.g. 'default'
@@ -49,26 +63,28 @@ df <- df[ which(df$med!=0 & df$att!=0), ]
 
 # --=============================
 # -- plotting distribution of Att
-df_waves_long = melt(df[,c(4,14)], id.vars = c("CurrentActivity"),
+df_waves_long = melt(df[,c(2,4,14)], id.vars = c("username", "CurrentActivity"),
                      variable.name = "index", value.name = "Att"); 
     # -- remove Att=0
-df_waves_long[df_waves_long==0] = NA;  df_waves_long = na.omit(df_waves_long)
-yScales = "free"; 
-gTitle = "EEG Att distribution";
+# df_waves_long$Att[df_waves_long$Att==0] = NA;  df_waves_long = na.omit(df_waves_long)
+# df_waves_long[df_waves_long==0] = NA;  df_waves_long = na.omit(df_waves_long)
+
+yScales = "free_y"; gTitle = "EEG Att distribution";
+    # -- crete Att distribution graph
 p1 = ggplot(df_waves_long, aes(x=Att)) +
-  geom_histogram(colour="white") +  facet_wrap(~CurrentActivity, scales = yScales, nrow=1) +
+  geom_histogram(colour="white") +  facet_wrap(username~CurrentActivity, scales = yScales, ncol=3) +
   ggtitle(gTitle) +  theme(legend.position="none") 
 
 # --=============================
 # -- plotting distribution of Med
-df_waves_long = melt(df[,c(5,14)], id.vars = c("CurrentActivity"),
+df_waves_long = melt(df[,c(2,5,14)], id.vars = c("username","CurrentActivity"),
                      variable.name = "index", value.name = "Med"); 
 # -- remove Att=0
 df_waves_long[df_waves_long==0] = NA;  df_waves_long = na.omit(df_waves_long)
 yScales = "free"; 
 gTitle = "EEG Med distribution";
 p2 = ggplot(df_waves_long, aes(x=Med)) +
-  geom_histogram(colour="white") +  facet_wrap(~CurrentActivity, scales = yScales, nrow=1) +
+  geom_histogram(colour="white") +  facet_wrap(username~CurrentActivity, scales = yScales, ncol=4) +
   ggtitle(gTitle) +  theme(legend.position="none") 
 
 # --=============================
