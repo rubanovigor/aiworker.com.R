@@ -4,7 +4,7 @@
 rm(list=ls());
 # --===========================================================================
 library(cluster); library(ggplot2); library(gridExtra); library(scatterplot3d);
-library(reshape2)
+library(reshape2); require(plyr)
 # --===========================================================================
 # # csv_dir = "~/aiworker.com.R/data/csv"
 # # csv_dir = "~/aiworker.com.R/data/csv/alex"
@@ -29,6 +29,9 @@ temp$username= "EzequielDjeredjian"; temp$CurrentActivity = "football"
 temp$att = 50; temp$med = 50;
 df = rbind(df, temp)
 remove(temp)
+    # -- parsing date
+# df$time = substr(toString(df$time), 1,8) 
+df$time = substr(df$time, 1,8) 
     # -- getting waves name from initial data
 wave_name = colnames(df[,c(6:13)])
 # -- clean up rawData
@@ -186,3 +189,40 @@ if(TotalFlag)
   grid.arrange(p1,p2,p3, ncol=1, nrow=3)
   dev.off()
 }
+
+# =============================
+# =============================
+# -- calculate daily average
+# gTitle = "EEG: day by day Att";
+# dfAVG = ddply(df, .(username, CurrentActivity, time), summarize, mean = round(mean(att), 2),  sd = round(sd(att), 2))
+
+# gTitle = "EEG: day by day Med";
+# dfAVG = ddply(df, .(username, CurrentActivity, time), summarize, mean = round(mean(med), 2),  sd = round(sd(med), 2))
+
+gTitle = "EEG: day by day S";
+dfAVG = ddply(df, .(username, CurrentActivity, time), summarize, mean = round(mean(s), 2),  sd = round(sd(s), 2))
+    #-- temp fix
+dfAVG$time[11] = '20150202'
+
+yScales = 'fixed'
+GraphRow = 3; GraphCol = 4; TitletxtSize = 9;  GraphWidth = 1200;
+xFacetWrap = CurrentActivity~username;
+
+p4 = ggplot(dfAVG, aes(x=time, y=mean)) + 
+  geom_line(aes(group=username), colour="red", size = 2) +
+  geom_point(colour="blue", size=4) +
+  facet_wrap(xFacetWrap, scales = yScales, nrow = GraphRow, ncol = GraphCol) +
+  ggtitle(gTitle) + 
+  theme(legend.position="none", 
+        plot.title = element_text(lineheight=1,size=18, face="bold"),
+        strip.text.x = element_text(size=TitletxtSize, face="bold"),
+        axis.text = element_text(colour = "black", size = 6, face="bold"))
+
+# -- saving graph to png file
+# png("~/aiworker.com.R/output/att_mean_day2day.png", width=GraphWidth, height=800, res=120)
+# png("~/aiworker.com.R/output/med_mean_day2day.png", width=GraphWidth, height=800, res=120)
+png("~/aiworker.com.R/output/s_mean_day2day.png", width=GraphWidth, height=800, res=120)
+p4
+dev.off()
+
+
